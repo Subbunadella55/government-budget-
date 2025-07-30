@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Government Budget Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f3f3f3;
+    }
+    input, button {
+      margin: 5px;
+      padding: 10px;
+    }
+    #status {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h2>📊 Government Budget Tracker</h2>
+
+  <button onclick="connectWallet()">🔌 Connect Wallet</button>
+  <p id="walletAddress">Wallet: Not connected</p>
+
+  <h3>📝 Allocate Budget</h3>
+  <input type="text" id="deptId" placeholder="Department ID (e.g., Health)">
+  <input type="text" id="amount" placeholder="Amount in ETH">
+  <input type="text" id="wallet" placeholder="Department Wallet Address">
+  <button onclick="allocateBudget()">Allocate</button>
+
+  <h3>💸 Spend Automatically</h3>
+  <input type="text" id="spendDeptId" placeholder="Department ID">
+  <input type="text" id="spendAmount" placeholder="Amount in ETH">
+  <button onclick="spendAutomatically()">Spend</button>
+
+  <h3>📈 View Department Status</h3>
+  <input type="text" id="statusDeptId" placeholder="Department ID">
+  <button onclick="getStatus()">Get Status</button>
+
+  <div id="status"></div>
+
+  <script>
+    let web3;
+    let contract;
+    const contractAddress = "YOUR_CONTRACT_ADDRESS_HERE";
+    const contractABI = YOUR_CONTRACT_ABI_HERE; // Replace with ABI
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        await ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await web3.eth.getAccounts();
+        document.getElementById('walletAddress').innerText = "Wallet: " + accounts[0];
+        contract = new web3.eth.Contract(contractABI, contractAddress);
+      } else {
+        alert("MetaMask not detected!");
+      }
+    }
+
+    async function allocateBudget() {
+      const deptId = document.getElementById('deptId').value;
+      const amount = web3.utils.toWei(document.getElementById('amount').value, 'ether');
+      const wallet = document.getElementById('wallet').value;
+      const accounts = await web3.eth.getAccounts();
+      contract.methods.allocateBudget(deptId, amount, wallet)
+        .send({ from: accounts[0] })
+        .on('receipt', () => alert("Budget allocated!"))
+        .on('error', (err) => alert(err.message));
+    }
+
+    async function spendAutomatically() {
+      const deptId = document.getElementById('spendDeptId').value;
+      const amount = web3.utils.toWei(document.getElementById('spendAmount').value, 'ether');
+      const accounts = await web3.eth.getAccounts();
+      contract.methods.spendAutomatically(deptId, amount)
+        .send({ from: accounts[0] })
+        .on('receipt', () => alert("Amount spent!"))
+        .on('error', (err) => alert(err.message));
+    }
+
+    async function getStatus() {
+      const deptId = document.getElementById('statusDeptId').value;
+      try {
+        const data = await contract.methods.getDepartmentStatus(deptId).call();
+        document.getElementById('status').innerHTML = `
+          <strong>Status for "${deptId}":</strong><br>
+          ✅ Allocated: ${web3.utils.fromWei(data[0], 'ether')} ETH<br>
+          💸 Spent: ${web3.utils.fromWei(data[1], 'ether')} ETH<br>
+          💰 Remaining: ${web3.utils.fromWei(data[2], 'ether')} ETH<br>
+          🧾 Wallet: ${data[3]}
+        `;
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+  </script>
+</body>
+</html>
