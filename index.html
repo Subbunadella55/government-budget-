@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Government Budget Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background-color: #f3f3f3;
+      background-color: #f4f4f4;
     }
     input, button {
       margin: 5px;
@@ -15,9 +16,9 @@
     }
     #status {
       margin-top: 20px;
-      padding: 10px;
+      padding: 15px;
       background-color: #fff;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
@@ -47,8 +48,8 @@
   <script>
     let web3;
     let contract;
-    const contractAddress = "YOUR_CONTRACT_ADDRESS_HERE";
-    const contractABI = YOUR_CONTRACT_ABI_HERE; // Replace with ABI
+    const contractAddress = "YOUR_CONTRACT_ADDRESS_HERE"; // Replace with deployed address
+    const contractABI = YOUR_CONTRACT_ABI_HERE; // Replace with ABI from Remix
 
     async function connectWallet() {
       if (window.ethereum) {
