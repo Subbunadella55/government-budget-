@@ -3,405 +3,817 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Government Budget Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title>Government Budget Tracker dApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
     <style>
-        :root {
-            --primary-color: #4CAF50;
-            --secondary-color: #2196F3;
-            --background-color: #e8f5e9;
-            --card-background: #ffffff;
-            --text-color: #333;
-            --border-color: #ddd;
-            --hover-color: #45a049;
-        }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            padding: 20px;
         }
+
         .container {
-            max-width: 900px;
-            width: 100%;
-            margin: 20px;
-            padding: 30px;
-            background-color: var(--card-background);
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        h1, h2, h3 {
-            color: var(--primary-color);
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
         }
-        .section {
-            margin-bottom: 25px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: #f9f9f9;
-        }
-        .input-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
+
+        .header h1 {
+            font-size: 2.5rem;
             margin-bottom: 10px;
         }
-        .input-group label {
-            min-width: 120px;
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
-        .input-group input {
-            flex-grow: 1;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
+
+        .wallet-section {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
         }
-        button {
-            padding: 12px 25px;
+
+        .wallet-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .connect-btn {
+            background: #28a745;
+            color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: #fff;
+
+        .connect-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
         }
-        .btn-primary:hover {
-            background-color: var(--hover-color);
+
+        .connect-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
         }
-        .btn-secondary {
-            background-color: var(--secondary-color);
-            color: #fff;
+
+        .main-content {
+            padding: 30px;
         }
-        .btn-secondary:hover {
-            background-color: #1a7fc5;
+
+        .section {
+            margin-bottom: 40px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 5px solid #007bff;
         }
-        .status-message {
-            margin-top: 15px;
-            font-style: italic;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #e0e0e0;
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
         }
-        .status-success {
-            color: #388e3c;
-            background-color: #c8e6c9;
+
+        .form-group {
+            margin-bottom: 20px;
         }
-        .status-error {
-            color: #d32f2f;
-            background-color: #ffcdd2;
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .status-display {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .status-value {
+            font-family: 'Courier New', monospace;
+            color: #007bff;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .instructions code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .wallet-info {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>GovBudgetTracker DApp</h1>
-    <p style="text-align: center;">Transparently track government budgets on the blockchain.</p>
-
-    <div class="section">
-        <h3>Connect to MetaMask</h3>
-        <div class="input-group">
-            <button id="connectButton" class="btn-primary">Connect Wallet</button>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ Government Budget Tracker</h1>
+            <p>Transparent blockchain-based budget management system</p>
         </div>
-        <p id="accountInfo" class="status-message">Status: Not connected.</p>
-        <p>Admin Address: <span id="adminAddress">...</span></p>
+
+        <div class="wallet-section">
+            <div class="wallet-info">
+                <div>
+                    <strong>Connected Wallet:</strong>
+                    <div class="wallet-address" id="walletAddress">Not connected</div>
+                </div>
+                <button class="connect-btn" id="connectWallet">Connect MetaMask</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="instructions">
+                <h3>⚠️ Setup Instructions</h3>
+                <p><strong>Before using this dApp, you must:</strong></p>
+                <ol style="margin: 10px 0 0 20px;">
+                    <li>Replace <code>CONTRACT_ADDRESS</code> with your deployed contract address</li>
+                    <li>Replace <code>CONTRACT_ABI</code> with your contract's ABI array</li>
+                    <li>Ensure MetaMask is installed and connected to the correct network</li>
+                </ol>
+            </div>
+
+            <div id="alerts"></div>
+
+            <!-- Allocate Budget Section -->
+            <div class="section">
+                <h2>💰 Allocate Budget</h2>
+                <form id="allocateForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="allocateDeptId">Department ID:</label>
+                            <input type="text" id="allocateDeptId" placeholder="e.g., DEPT001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="allocateAmount">Budget Amount (ETH):</label>
+                            <input type="number" id="allocateAmount" step="0.001" placeholder="0.1" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="allocateWallet">Wallet Address:</label>
+                        <input type="text" id="allocateWallet" placeholder="0x..." required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Allocate Budget</button>
+                </form>
+            </div>
+
+            <!-- Spend Budget Section -->
+            <div class="section">
+                <h2>💸 Spend Budget</h2>
+                <form id="spendForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="spendDeptId">Department ID:</label>
+                            <input type="text" id="spendDeptId" placeholder="e.g., DEPT001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="spendAmount">Spend Amount (ETH):</label>
+                            <input type="number" id="spendAmount" step="0.001" placeholder="0.05" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Spend Budget</button>
+                </form>
+            </div>
+
+            <!-- Check Status Section -->
+            <div class="section">
+                <h2>📊 Check Department Status</h2>
+                <form id="statusForm">
+                    <div class="form-group">
+                        <label for="statusDeptId">Department ID:</label>
+                        <input type="text" id="statusDeptId" placeholder="e.g., DEPT001" required>
+                    </div>
+                    <button type="submit" class="btn btn-info">Get Status</button>
+                </form>
+                
+                <div class="status-display" id="statusDisplay" style="display: none;">
+                    <h3>Department Status</h3>
+                    <div class="status-item">
+                        <span class="status-label">Department ID:</span>
+                        <span class="status-value" id="statusDeptIdDisplay">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Allocated Budget:</span>
+                        <span class="status-value" id="statusAllocated">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Amount Spent:</span>
+                        <span class="status-value" id="statusSpent">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Remaining Budget:</span>
+                        <span class="status-value" id="statusRemaining">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Assigned Wallet:</span>
+                        <span class="status-value" id="statusWallet">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="section">
-        <h3>Allocate Budget</h3>
-        <p>Only the contract admin can perform this action.</p>
-        <div class="input-group">
-            <label for="allocateDeptId">Department/Project ID:</label>
-            <input type="text" id="allocateDeptId" placeholder="e.g., 'health-project-1'">
-        </div>
-        <div class="input-group">
-            <label for="allocateAmount">Amount (in ETH):</label>
-            <input type="number" id="allocateAmount" placeholder="e.g., 500">
-        </div>
-        <button id="allocateButton" class="btn-primary">Allocate Budget</button>
-        <p id="allocateStatus" class="status-message"></p>
-    </div>
-    
-    <div class="section">
-        <h3>Spend Funds</h3>
-        <p>Spend funds from an allocated budget.</p>
-        <div class="input-group">
-            <label for="spendDeptId">Department/Project ID:</label>
-            <input type="text" id="spendDeptId" placeholder="e.g., 'health-project-1'">
-        </div>
-        <div class="input-group">
-            <label for="spendAmount">Amount (in ETH):</label>
-            <input type="number" id="spendAmount" placeholder="e.g., 50">
-        </div>
-        <button id="spendButton" class="btn-secondary">Spend Funds</button>
-        <p id="spendStatus" class="status-message"></p>
-    </div>
+    <script>
+        // ⚠️ REPLACE THESE VALUES WITH YOUR ACTUAL CONTRACT DETAILS
+        const CONTRACT_ADDRESS = 0x2EbA99042764664d0636e2A678F9a1BB9BCdc0fa; // Replace with your deployed contract address
+        const CONTRACT_ABI =[
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "deptId",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "allocateBudget",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "string",
+        "name": "deptId",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "remainingAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "AuditPerformed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "string",
+        "name": "deptId",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "BudgetAllocated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "string",
+        "name": "deptId",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "FundsSpent",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "deptId",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "spendFunds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "admin",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "deptId",
+        "type": "string"
+      }
+    ],
+    "name": "auditBudget",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "remainingAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "name": "budgets",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "allocatedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "spentAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "exists",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 
-    <div class="section">
-        <h3>Audit Budget</h3>
-        <p>Check the remaining budget for a department. Only the admin can do this.</p>
-        <div class="input-group">
-            <label for="auditDeptId">Department/Project ID:</label>
-            <input type="text" id="auditDeptId" placeholder="e.g., 'health-project-1'">
-        </div>
-        <button id="auditButton" class="btn-secondary">Audit Budget</button>
-        <p id="auditStatus" class="status-message"></p>
-        <p>Remaining Budget: <span id="remainingAmount">...</span></p>
-    </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-<script>
-    // ====================================================================
-    // IMPORTANT: UPDATE THESE VALUES WITH YOUR DEPLOYED CONTRACT'S DETAILS
-    // ====================================================================
+        // Global variables
+        let web3;
+        let contract;
+        let userAccount;
 
-    // Your smart contract's address after deployment.
-    const contractAddress = "YOUR_CONTRACT_ADDRESS_HERE";
+        // DOM elements
+        const connectWalletBtn = document.getElementById('connectWallet');
+        const walletAddressDiv = document.getElementById('walletAddress');
+        const alertsDiv = document.getElementById('alerts');
 
-    // Your contract's ABI as a JSON array. You must generate this
-    // from your compiled GovBudgetTracker contract.
-    const contractABI = [
-        {
-            "inputs": [],
-            "stateMutability": "nonpayable",
-            "type": "constructor"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                { "indexed": true, "internalType": "string", "name": "deptId", "type": "string" },
-                { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
-            ],
-            "name": "BudgetAllocated",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                { "indexed": true, "internalType": "string", "name": "deptId", "type": "string" },
-                { "indexed": false, "internalType": "uint256", "name": "remainingAmount", "type": "uint256" }
-            ],
-            "name": "AuditPerformed",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                { "indexed": true, "internalType": "string", "name": "deptId", "type": "string" },
-                { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
-                { "indexed": false, "internalType": "address", "name": "spender", "type": "address" }
-            ],
-            "name": "FundsSpent",
-            "type": "event"
-        },
-        {
-            "inputs": [],
-            "name": "admin",
-            "outputs": [
-                { "internalType": "address", "name": "", "type": "address" }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                { "internalType": "string", "name": "deptId", "type": "string" },
-                { "internalType": "uint256", "name": "amount", "type": "uint256" }
-            ],
-            "name": "allocateBudget",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                { "internalType": "string", "name": "deptId", "type": "string" }
-            ],
-            "name": "auditBudget",
-            "outputs": [
-                { "internalType": "uint256", "name": "remaining", "type": "uint256" }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                { "internalType": "string", "name": "", "type": "string" }
-            ],
-            "name": "budgets",
-            "outputs": [
-                { "internalType": "uint256", "name": "allocatedAmount", "type": "uint256" },
-                { "internalType": "uint256", "name": "spentAmount", "type": "uint256" },
-                { "internalType": "bool", "name": "exists", "type": "bool" }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                { "internalType": "string", "name": "deptId", "type": "string" },
-                { "internalType": "uint256", "name": "amount", "type": "uint256" }
-            ],
-            "name": "spendFunds",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        }
-    ];
-
-    let signer;
-    let provider;
-    let contract;
-
-    const connectButton = document.getElementById("connectButton");
-    const accountInfo = document.getElementById("accountInfo");
-    const adminAddressSpan = document.getElementById("adminAddress");
-    const allocateButton = document.getElementById("allocateButton");
-    const spendButton = document.getElementById("spendButton");
-    const auditButton = document.getElementById("auditButton");
-
-    // Helper function to update status messages
-    function setStatus(element, message, type = 'info') {
-        element.textContent = message;
-        element.className = `status-message status-${type}`;
-    }
-
-    // Function to connect to MetaMask
-    async function connectWallet() {
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                signer = provider.getSigner();
-                contract = new ethers.Contract(contractAddress, contractABI, signer);
-
-                const address = await signer.getAddress();
-                setStatus(accountInfo, `Connected: ${address}`, 'success');
-
-                const adminAddr = await contract.admin();
-                adminAddressSpan.textContent = adminAddr;
-
-                window.ethereum.on('accountsChanged', (accounts) => {
-                    if (accounts.length > 0) {
-                        setStatus(accountInfo, `Connected: ${accounts[0]}`, 'success');
-                    } else {
-                        setStatus(accountInfo, "Connection lost.", 'error');
-                    }
-                });
-            } catch (error) {
-                console.error("Connection error:", error);
-                setStatus(accountInfo, `Error: ${error.message}`, 'error');
+        // Initialize the app
+        window.addEventListener('load', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                console.log('MetaMask is installed!');
+                web3 = new Web3(window.ethereum);
+                
+                // Check if already connected
+                const accounts = await web3.eth.getAccounts();
+                if (accounts.length > 0) {
+                    userAccount = accounts[0];
+                    updateWalletUI();
+                    initializeContract();
+                }
+            } else {
+                showAlert('MetaMask is not installed. Please install MetaMask to use this dApp.', 'error');
             }
-        } else {
-            alert("MetaMask is not installed. Please install it to use this app.");
-        }
-    }
+        });
 
-    // Function to allocate budget
-    async function allocateBudget() {
-        if (!signer) {
-            setStatus(document.getElementById("allocateStatus"), "Please connect your wallet first.", 'error');
-            return;
-        }
-        const deptId = document.getElementById("allocateDeptId").value;
-        const amountInEth = document.getElementById("allocateAmount").value;
-        const status = document.getElementById("allocateStatus");
-        
-        if (!deptId || !amountInEth) {
-            setStatus(status, "Please fill in all fields.", 'error');
-            return;
-        }
+        // Connect wallet function
+        connectWalletBtn.addEventListener('click', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    connectWalletBtn.innerHTML = '<span class="loading"></span>Connecting...';
+                    connectWalletBtn.disabled = true;
 
-        try {
-            const amountInWei = ethers.utils.parseEther(amountInEth);
-            setStatus(status, "Allocating budget... Please confirm in MetaMask.", 'info');
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
+                    
+                    userAccount = accounts[0];
+                    updateWalletUI();
+                    initializeContract();
+                    showAlert('Wallet connected successfully!', 'success');
+                } catch (error) {
+                    console.error('Error connecting wallet:', error);
+                    showAlert('Failed to connect wallet: ' + error.message, 'error');
+                } finally {
+                    connectWalletBtn.innerHTML = 'Connect MetaMask';
+                    connectWalletBtn.disabled = false;
+                }
+            } else {
+                showAlert('MetaMask is not installed!', 'error');
+            }
+        });
 
-            const tx = await contract.allocateBudget(deptId, amountInWei);
-            await tx.wait();
-
-            setStatus(status, `Budget for ${deptId} allocated successfully!`, 'success');
-        } catch (error) {
-            console.error("Allocation failed:", error);
-            setStatus(status, `Error: ${error.message}`, 'error');
-        }
-    }
-
-    // Function to spend funds
-    async function spendFunds() {
-        if (!signer) {
-            setStatus(document.getElementById("spendStatus"), "Please connect your wallet first.", 'error');
-            return;
-        }
-        const deptId = document.getElementById("spendDeptId").value;
-        const amountInEth = document.getElementById("spendAmount").value;
-        const status = document.getElementById("spendStatus");
-
-        if (!deptId || !amountInEth) {
-            setStatus(status, "Please fill in all fields.", 'error');
-            return;
+        // Update wallet UI
+        function updateWalletUI() {
+            if (userAccount) {
+                walletAddressDiv.textContent = userAccount;
+                connectWalletBtn.textContent = 'Connected';
+                connectWalletBtn.style.background = '#28a745';
+                connectWalletBtn.disabled = true;
+            }
         }
 
-        try {
-            const amountInWei = ethers.utils.parseEther(amountInEth);
-            setStatus(status, "Spending funds... Please confirm in MetaMask.", 'info');
-
-            const tx = await contract.spendFunds(deptId, amountInWei);
-            await tx.wait();
-
-            setStatus(status, `Funds spent for ${deptId} successfully!`, 'success');
-        } catch (error) {
-            console.error("Spending failed:", error);
-            setStatus(status, `Error: ${error.message}`, 'error');
+        // Initialize contract
+        function initializeContract() {
+            if (CONTRACT_ADDRESS === 'YOUR_CONTRACT_ADDRESS_HERE') {
+                showAlert('Please replace CONTRACT_ADDRESS with your actual contract address!', 'error');
+                return;
+            }
+            
+            try {
+                contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+                console.log('Contract initialized successfully');
+            } catch (error) {
+                console.error('Error initializing contract:', error);
+                showAlert('Error initializing contract. Please check CONTRACT_ABI.', 'error');
+            }
         }
-    }
 
-    // Function to audit budget
-    async function auditBudget() {
-        if (!contract) {
-            setStatus(document.getElementById("auditStatus"), "Please connect your wallet first.", 'error');
-            return;
+        // Show alert function
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            alertsDiv.appendChild(alertDiv);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
         }
-        const deptId = document.getElementById("auditDeptId").value;
-        const status = document.getElementById("auditStatus");
-        const remainingAmountSpan = document.getElementById("remainingAmount");
 
-        if (!deptId) {
-            setStatus(status, "Please enter a department ID.", 'error');
-            return;
+        // Allocate Budget Form
+        document.getElementById('allocateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!contract || !userAccount) {
+                showAlert('Please connect your wallet first!', 'error');
+                return;
+            }
+
+            const deptId = document.getElementById('allocateDeptId').value;
+            const amount = document.getElementById('allocateAmount').value;
+            const walletAddress = document.getElementById('allocateWallet').value;
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                submitBtn.innerHTML = '<span class="loading"></span>Processing...';
+                submitBtn.disabled = true;
+
+                // Convert ETH to Wei
+                const amountWei = web3.utils.toWei(amount, 'ether');
+                
+                const result = await contract.methods.allocateBudget(deptId, amountWei, walletAddress)
+                    .send({ from: userAccount });
+                
+                console.log('Transaction result:', result);
+                showAlert(`Budget allocated successfully! Transaction: ${result.transactionHash}`, 'success');
+                
+                // Clear form
+                e.target.reset();
+                
+            } catch (error) {
+                console.error('Error allocating budget:', error);
+                showAlert('Error allocating budget: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Spend Budget Form
+        document.getElementById('spendForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!contract || !userAccount) {
+                showAlert('Please connect your wallet first!', 'error');
+                return;
+            }
+
+            const deptId = document.getElementById('spendDeptId').value;
+            const amount = document.getElementById('spendAmount').value;
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                submitBtn.innerHTML = '<span class="loading"></span>Processing...';
+                submitBtn.disabled = true;
+
+                // Convert ETH to Wei
+                const amountWei = web3.utils.toWei(amount, 'ether');
+                
+                const result = await contract.methods.spendAutomatically(deptId, amountWei)
+                    .send({ from: userAccount });
+                
+                console.log('Transaction result:', result);
+                showAlert(`Budget spent successfully! Transaction: ${result.transactionHash}`, 'success');
+                
+                // Clear form
+                e.target.reset();
+                
+            } catch (error) {
+                console.error('Error spending budget:', error);
+                showAlert('Error spending budget: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Check Status Form
+        document.getElementById('statusForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!contract) {
+                showAlert('Please connect your wallet first!', 'error');
+                return;
+            }
+
+            const deptId = document.getElementById('statusDeptId').value;
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                submitBtn.innerHTML = '<span class="loading"></span>Loading...';
+                submitBtn.disabled = true;
+
+                const result = await contract.methods.getDepartmentStatus(deptId).call();
+                
+                console.log('Status result:', result);
+                
+                // Display results
+                document.getElementById('statusDeptIdDisplay').textContent = deptId;
+                document.getElementById('statusAllocated').textContent = web3.utils.fromWei(result.allocated, 'ether') + ' ETH';
+                document.getElementById('statusSpent').textContent = web3.utils.fromWei(result.spent, 'ether') + ' ETH';
+                document.getElementById('statusRemaining').textContent = web3.utils.fromWei(result.remaining, 'ether') + ' ETH';
+                document.getElementById('statusWallet').textContent = result.wallet;
+                
+                document.getElementById('statusDisplay').style.display = 'block';
+                showAlert('Department status retrieved successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error getting status:', error);
+                showAlert('Error getting department status: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Handle account changes
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    // User disconnected
+                    userAccount = null;
+                    walletAddressDiv.textContent = 'Not connected';
+                    connectWalletBtn.textContent = 'Connect MetaMask';
+                    connectWalletBtn.style.background = '#28a745';
+                    connectWalletBtn.disabled = false;
+                    showAlert('Wallet disconnected', 'info');
+                } else {
+                    // User switched accounts
+                    userAccount = accounts[0];
+                    updateWalletUI();
+                    showAlert('Account switched', 'info');
+                }
+            });
+
+            window.ethereum.on('chainChanged', (chainId) => {
+                // Reload the page when chain changes
+                window.location.reload();
+            });
         }
-        
-        try {
-            setStatus(status, "Auditing budget...", 'info');
-            const remainingWei = await contract.auditBudget(deptId);
-            const remainingEth = ethers.utils.formatEther(remainingWei);
-            remainingAmountSpan.textContent = `${remainingEth} ETH`;
-            setStatus(status, `Audit successful for ${deptId}.`, 'success');
-        } catch (error) {
-            console.error("Audit failed:", error);
-            remainingAmountSpan.textContent = "...";
-            setStatus(status, `Error: ${error.message}`, 'error');
-        }
-    }
-
-    // Attach event listeners
-    connectButton.addEventListener("click", connectWallet);
-    allocateButton.addEventListener("click", allocateBudget);
-    spendButton.addEventListener("click", spendFunds);
-    auditButton.addEventListener("click", auditBudget);
-</script>
-
+    </script>
 </body>
 </html>
