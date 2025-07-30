@@ -1,104 +1,316 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Government Budget Tracker</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    input, button {
-      margin: 5px;
-      padding: 10px;
-    }
-    #status {
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Budget Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: auto; background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        h1 { color: #333; text-align: center; }
+        h3 { color: #555; }
+        input, button { padding: 10px; margin-top: 5px; margin-right: 10px; border-radius: 5px; border: 1px solid #ccc; }
+        button { background-color: #007bff; color: #fff; border: none; cursor: pointer; transition: background-color 0.3s ease; }
+        button:hover { background-color: #0056b3; }
+        input[type="text"], input[type="number"] { width: 250px; }
+        #accountInfo { font-weight: bold; color: #28a745; }
+        .status-message { font-style: italic; margin-top: 10px; color: #666; }
+    </style>
 </head>
 <body>
-  <h2>📊 Government Budget Tracker</h2>
 
-  <button onclick="connectWallet()">🔌 Connect Wallet</button>
-  <p id="walletAddress">Wallet: Not connected</p>
+<div class="container">
+    <h1>Government Budget Tracker</h1>
+    <p>A DApp to demonstrate government budget tracking using a smart contract and MetaMask.</p>
 
-  <h3>📝 Allocate Budget</h3>
-  <input type="text" id="deptId" placeholder="Department ID (e.g., Health)">
-  <input type="text" id="amount" placeholder="Amount in ETH">
-  <input type="text" id="wallet" placeholder="Department Wallet Address">
-  <button onclick="allocateBudget()">Allocate</button>
+    <div class="section">
+        <h3>1. Connect to MetaMask</h3>
+        <p>Click the button to connect your wallet. You must be the contract owner to allocate or record spending.</p>
+        <p id="accountInfo" class="status-message">Not connected.</p>
+        <button id="connectButton">Connect Wallet</button>
+    </div>
 
-  <h3>💸 Spend Automatically</h3>
-  <input type="text" id="spendDeptId" placeholder="Department ID">
-  <input type="text" id="spendAmount" placeholder="Amount in ETH">
-  <button onclick="spendAutomatically()">Spend</button>
+    <div class="section">
+        <h3>2. Allocate Budget</h3>
+        <p>Allocate an initial budget to a department. This is a transaction that requires a wallet signature.</p>
+        <input type="text" id="allocateDepartmentName" placeholder="Department Name">
+        <input type="number" id="allocateAmount" placeholder="Amount (in ETH)">
+        <button id="allocateButton">Allocate Budget</button>
+        <p id="allocateStatus" class="status-message"></p>
+    </div>
+    
+    <div class="section">
+        <h3>3. Record Spending</h3>
+        <p>Record a spending transaction. The amount of ETH sent with this transaction is the amount spent.</p>
+        <input type="text" id="spendDepartmentName" placeholder="Department Name">
+        <input type="number" id="spendAmount" placeholder="Amount to Spend (in ETH)">
+        <button id="spendButton">Record Spending</button>
+        <p id="spendStatus" class="status-message"></p>
+    </div>
 
-  <h3>📈 View Department Status</h3>
-  <input type="text" id="statusDeptId" placeholder="Department ID">
-  <button onclick="getStatus()">Get Status</button>
+    <div class="section">
+        <h3>4. Check Department Budget</h3>
+        <p>This is a free call and does not require a signature.</p>
+        <input type="text" id="checkDepartmentName" placeholder="Department Name">
+        <button id="checkBudgetButton">Check Budget</button>
+        <p>Remaining Budget: <span id="remainingBudget">...</span></p>
+    </div>
+    
+    <div class="section">
+        <h3>5. Withdraw Funds</h3>
+        <p>This transaction allows the owner to withdraw the collected "spent" funds from the contract.</p>
+        <button id="withdrawButton">Withdraw All Funds</button>
+        <p id="withdrawStatus" class="status-message"></p>
+    </div>
+</div>
 
-  <div id="status"></div>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
-  <script>
-    let web3;
+<script>
+    // ====================================================================
+    // IMPORTANT: UPDATE THESE VALUES WITH YOUR DEPLOYED CONTRACT'S DETAILS
+    // ====================================================================
+
+    // Your smart contract's address after deployment.
+    const contractAddress = "YOUR_CONTRACT_ADDRESS_HERE";
+
+    // Your contract's ABI (Application Binary Interface) as a JSON array.
+    // This defines all the public functions and events of your contract.
+    const contractABI = [
+        {
+            "inputs": [
+                { "internalType": "string", "name": "_department", "type": "string" },
+                { "internalType": "uint256", "name": "_amount", "type": "uint256" }
+            ],
+            "name": "allocateBudget",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                { "internalType": "string", "name": "_department", "type": "string" }
+            ],
+            "name": "recordSpending",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                { "internalType": "string", "name": "_department", "type": "string" }
+            ],
+            "name": "getRemainingDepartmentBudget",
+            "outputs": [
+                { "internalType": "uint256", "name": "", "type": "uint256" }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getTotalSpent",
+            "outputs": [
+                { "internalType": "uint256", "name": "", "type": "uint256" }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "withdrawFunds",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        // Don't forget to include the constructor, events, and other functions in your ABI.
+        // A complete ABI will be generated by your Solidity compiler.
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                { "indexed": true, "internalType": "string", "name": "department", "type": "string" },
+                { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+            ],
+            "name": "BudgetAllocated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                { "indexed": true, "internalType": "string", "name": "department", "type": "string" },
+                { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+            ],
+            "name": "SpendingRecorded",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                { "indexed": true, "internalType": "address", "name": "recipient", "type": "address" },
+                { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+            ],
+            "name": "FundsWithdrawn",
+            "type": "event"
+        }
+    ];
+
+    let signer;
+    let provider;
     let contract;
-    const contractAddress = "YOUR_CONTRACT_ADDRESS_HERE"; // Replace with deployed address
-    const contractABI = YOUR_CONTRACT_ABI_HERE; // Replace with ABI from Remix
 
+    const connectButton = document.getElementById("connectButton");
+    const accountInfo = document.getElementById("accountInfo");
+    const allocateButton = document.getElementById("allocateButton");
+    const spendButton = document.getElementById("spendButton");
+    const checkBudgetButton = document.getElementById("checkBudgetButton");
+    const withdrawButton = document.getElementById("withdrawButton");
+    
+    // Function to connect to MetaMask
     async function connectWallet() {
-      if (window.ethereum) {
-        web3 = new Web3(window.ethereum);
-        await ethereum.request({ method: 'eth_requestAccounts' });
-        const accounts = await web3.eth.getAccounts();
-        document.getElementById('walletAddress').innerText = "Wallet: " + accounts[0];
-        contract = new web3.eth.Contract(contractABI, contractAddress);
-      } else {
-        alert("MetaMask not detected!");
-      }
+        if (typeof window.ethereum !== 'undefined') {
+            try {
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+                const address = await signer.getAddress();
+                accountInfo.innerText = `Connected: ${address}`;
+
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    if (accounts.length > 0) {
+                        accountInfo.innerText = `Connected: ${accounts[0]}`;
+                    } else {
+                        accountInfo.innerText = "Not connected.";
+                    }
+                });
+
+            } catch (error) {
+                console.error("User rejected request or other error:", error);
+                accountInfo.innerText = "Connection failed.";
+            }
+        } else {
+            alert("MetaMask is not installed. Please install it to use this app.");
+        }
     }
 
+    // Function to handle budget allocation
     async function allocateBudget() {
-      const deptId = document.getElementById('deptId').value;
-      const amount = web3.utils.toWei(document.getElementById('amount').value, 'ether');
-      const wallet = document.getElementById('wallet').value;
-      const accounts = await web3.eth.getAccounts();
-      contract.methods.allocateBudget(deptId, amount, wallet)
-        .send({ from: accounts[0] })
-        .on('receipt', () => alert("Budget allocated!"))
-        .on('error', (err) => alert(err.message));
+        if (!signer) {
+            alert("Please connect your wallet first.");
+            return;
+        }
+        const departmentName = document.getElementById("allocateDepartmentName").value;
+        const amountInEth = document.getElementById("allocateAmount").value;
+        const allocateStatus = document.getElementById("allocateStatus");
+        
+        if (!departmentName || !amountInEth) {
+            allocateStatus.innerText = "Please fill in all fields.";
+            return;
+        }
+
+        try {
+            const amountInWei = ethers.utils.parseEther(amountInEth);
+            allocateStatus.innerText = "Allocating budget... Please confirm in MetaMask.";
+
+            const tx = await contract.allocateBudget(departmentName, amountInWei);
+            await tx.wait(); 
+
+            allocateStatus.innerText = `Budget for ${departmentName} allocated successfully! Transaction hash: ${tx.hash}`;
+        } catch (error) {
+            console.error("Allocation failed:", error);
+            allocateStatus.innerText = `Error: ${error.message}`;
+        }
     }
 
-    async function spendAutomatically() {
-      const deptId = document.getElementById('spendDeptId').value;
-      const amount = web3.utils.toWei(document.getElementById('spendAmount').value, 'ether');
-      const accounts = await web3.eth.getAccounts();
-      contract.methods.spendAutomatically(deptId, amount)
-        .send({ from: accounts[0] })
-        .on('receipt', () => alert("Amount spent!"))
-        .on('error', (err) => alert(err.message));
+    // Function to handle recording spending
+    async function recordSpending() {
+        if (!signer) {
+            alert("Please connect your wallet first.");
+            return;
+        }
+        const departmentName = document.getElementById("spendDepartmentName").value;
+        const amountInEth = document.getElementById("spendAmount").value;
+        const spendStatus = document.getElementById("spendStatus");
+
+        if (!departmentName || !amountInEth) {
+            spendStatus.innerText = "Please fill in all fields.";
+            return;
+        }
+
+        try {
+            const amountInWei = ethers.utils.parseEther(amountInEth);
+            spendStatus.innerText = "Recording spending... Please confirm in MetaMask.";
+
+            const tx = await contract.recordSpending(departmentName, { value: amountInWei });
+            await tx.wait();
+
+            spendStatus.innerText = `Spending for ${departmentName} recorded successfully! Transaction hash: ${tx.hash}`;
+        } catch (error) {
+            console.error("Spending failed:", error);
+            spendStatus.innerText = `Error: ${error.message}`;
+        }
     }
 
-    async function getStatus() {
-      const deptId = document.getElementById('statusDeptId').value;
-      try {
-        const data = await contract.methods.getDepartmentStatus(deptId).call();
-        document.getElementById('status').innerHTML = `
-          <strong>Status for "${deptId}":</strong><br>
-          ✅ Allocated: ${web3.utils.fromWei(data[0], 'ether')} ETH<br>
-          💸 Spent: ${web3.utils.fromWei(data[1], 'ether')} ETH<br>
-          💰 Remaining: ${web3.utils.fromWei(data[2], 'ether')} ETH<br>
-          🧾 Wallet: ${data[3]}
-        `;
-      } catch (err) {
-        alert(err.message);
-      }
+    // Function to check the remaining budget
+    async function checkBudget() {
+        if (!contract) {
+            alert("Please connect your wallet first.");
+            return;
+        }
+        const departmentName = document.getElementById("checkDepartmentName").value;
+        const remainingBudgetSpan = document.getElementById("remainingBudget");
+
+        if (!departmentName) {
+            remainingBudgetSpan.innerText = "Please enter a department name.";
+            return;
+        }
+        
+        try {
+            const remainingWei = await contract.getRemainingDepartmentBudget(departmentName);
+            const remainingEth = ethers.utils.formatEther(remainingWei);
+            remainingBudgetSpan.innerText = `${remainingEth} ETH`;
+        } catch (error) {
+            console.error("Failed to fetch budget:", error);
+            remainingBudgetSpan.innerText = `Error: ${error.message}`;
+        }
     }
-  </script>
+
+    // Function to handle withdrawing funds
+    async function withdrawFunds() {
+        if (!signer) {
+            alert("Please connect your wallet first.");
+            return;
+        }
+        const withdrawStatus = document.getElementById("withdrawStatus");
+        
+        try {
+            withdrawStatus.innerText = "Withdrawing funds... Please confirm in MetaMask.";
+            
+            const tx = await contract.withdrawFunds();
+            await tx.wait();
+            
+            withdrawStatus.innerText = `Funds withdrawn successfully! Transaction hash: ${tx.hash}`;
+        } catch (error) {
+            console.error("Withdrawal failed:", error);
+            withdrawStatus.innerText = `Error: ${error.message}`;
+        }
+    }
+
+    // Attach event listeners to buttons
+    connectButton.addEventListener("click", connectWallet);
+    allocateButton.addEventListener("click", allocateBudget);
+    spendButton.addEventListener("click", recordSpending);
+    checkBudgetButton.addEventListener("click", checkBudget);
+    withdrawButton.addEventListener("click", withdrawFunds);
+</script>
+
 </body>
 </html>
